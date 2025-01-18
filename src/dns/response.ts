@@ -5,21 +5,20 @@ export function buildResponse(
   query: DNSQuery,
   originalMsg: Buffer,
   records: DNSRecordDoc[]
-): Buffer {
-  // Create response as Uint8Array instead of Buffer
+): Uint8Array {
   const response = new Uint8Array(512);
 
-  // Copy ID from query (first 2 bytes)
-  response.set(new Uint8Array(originalMsg.buffer, 0, 2), 0);
+  // Copy ID from query
+  response.set(originalMsg.subarray(0, 2), 0);
 
-  // Set response flags
-  response[2] = 0x81; // First byte of flags
-  response[3] = 0x80; // Second byte of flags
+  // Set flags
+  response[2] = 0x81;
+  response[3] = 0x80;
 
-  // Copy question count (bytes 4-5)
-  response.set(new Uint8Array(originalMsg.buffer, 4, 2), 4);
+  // Copy question count
+  response.set(originalMsg.subarray(4, 6), 4);
 
-  // Set answer count (bytes 6-7)
+  // Set answer count
   response[6] = 0x00;
   response[7] = records.length;
 
@@ -32,7 +31,7 @@ export function buildResponse(
   // Copy question section
   let offset = 12;
   response.set(
-    new Uint8Array(originalMsg.buffer, offset, query.questions[0].length),
+    originalMsg.subarray(offset, offset + query.questions[0].length),
     offset
   );
   offset += query.questions[0].length;
@@ -42,40 +41,46 @@ export function buildResponse(
     offset = addAnswerToResponse(response, offset, record);
   }
 
-  // Convert back to Buffer and return only the used portion
-  return Buffer.from(response.buffer, 0, offset);
+  return response.subarray(0, offset);
 }
 
-function addAnswerToResponse(
-  response: Buffer,
+export function addAnswerToResponse(
+  response: Uint8Array,
   offset: number,
   record: DNSRecordDoc
 ): number {
   // Name pointer to question
-  response.writeUInt16BE(0xc00c, offset);
+  response[offset] = 0xc0;
+  response[offset + 1] = 0x0c;
   offset += 2;
 
   // Type A record
-  response.writeUInt16BE(1, offset);
+  response[offset] = 0x00;
+  response[offset + 1] = 0x01;
   offset += 2;
 
   // Class IN
-  response.writeUInt16BE(1, offset);
+  response[offset] = 0x00;
+  response[offset + 1] = 0x01;
   offset += 2;
 
-  // TTL
-  response.writeUInt32BE(record.ttl, offset);
+  // TTL (32 bits)
+  const ttl = record.ttl || 3600;
+  response[offset] = (ttl >> 24) & 0xff;
+  response[offset + 1] = (ttl >> 16) & 0xff;
+  response[offset + 2] = (ttl >> 8) & 0xff;
+  response[offset + 3] = ttl & 0xff;
   offset += 4;
 
-  const ip = record.value.split(".");
-
-  // Length of IP address
-  response.writeUInt16BE(4, offset);
+  // IP address length (4 bytes for IPv4)
+  response[offset] = 0x00;
+  response[offset + 1] = 0x04;
   offset += 2;
 
   // IP address
+  const ip = record.value.split(".");
   ip.forEach((octet) => {
-    response.writeUInt8(parseInt(octet), offset++);
+    response[offset++] = parseInt(octet);
   });
 
   return offset;
