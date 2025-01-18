@@ -2,11 +2,12 @@
   "name": "dns-server",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "elysia": "latest",
+    "mongoose": "^8.9.5",
+    "valibot": "^1.0.0-beta.12"
   },
   "devDependencies": {
     "bun-types": "latest"
