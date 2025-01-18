@@ -6,7 +6,12 @@ import { DNSRecordModel } from "../models/DNSRecord";
 export function createDNSServer(port: number) {
   const socket = createSocket("udp4");
 
+  socket.on("error", (err) => {
+    console.error("DNS Server error:", err);
+  });
+
   socket.on("message", async (msg: Buffer, rinfo) => {
+    console.log(`Received DNS query from ${rinfo.address}:${rinfo.port}`);
     try {
       // Use msg directly as it's already a Buffer
       const query = parseQuery(msg);

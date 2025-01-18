@@ -30,6 +30,6 @@ const DNSRecordSchema = new Schema<DNSRecordDoc>(
 DNSRecordSchema.index({ subdomain: 1, type: 1 });
 
 export const DNSRecordModel = mongoose.model<DNSRecordDoc>(
-  "DNSRecord",
+  "dnsrecord",
   DNSRecordSchema
 );
