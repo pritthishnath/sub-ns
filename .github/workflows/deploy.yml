@@ -1,4 +1,4 @@
-name: CD
+name: Deployment
 
 # Controls when the action will run.
 on:
