@@ -2,8 +2,6 @@ import { config } from "./config";
 import { connectDB, disconnectDB } from "./db/connection";
 import { createDNSServer } from "./dns/server";
 import { createAPIServer } from "./api/routes";
-import { UserModel } from "./models/User";
-import { DNSRecordModel } from "./models/DNSRecord";
 
 async function main() {
   // Connect to MongoDB

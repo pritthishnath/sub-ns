@@ -1,16 +1,20 @@
 import mongoose, { Schema } from "mongoose";
 
-export interface UserDoc {
+interface UserDoc {
   email: string;
-  subdomains: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  name: string;
+  role: string;
+  password: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const UserSchema = new Schema<UserDoc>(
   {
     email: { type: String, required: true, unique: true },
-    subdomains: [{ type: String, index: true }],
+    name: { type: String },
+    role: { type: String, enum: ["admin", "user"], default: "user" },
+    password: { type: String },
   },
   { timestamps: true }
 );

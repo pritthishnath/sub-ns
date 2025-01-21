@@ -2,7 +2,8 @@
   "name": "dns-server",
   "version": "1.0.50",
   "scripts": {
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "script:initiateAdmin": "bun run src/scripts/createAdminRecords.ts"
   },
   "dependencies": {
     "elysia": "latest",
