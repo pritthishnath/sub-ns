@@ -1,7 +1,7 @@
 import { createSocket } from "dgram";
 import { parseQuery } from "./parser";
 import { buildResponse } from "./response";
-import { DNSRecordModel } from "../models/DNSRecord";
+import { DNS_TYPES, DNSRecordModel } from "../models/DNSRecord";
 
 export function createDNSServer(port: number) {
   const socket = createSocket("udp4");
@@ -16,8 +16,13 @@ export function createDNSServer(port: number) {
       // Use msg directly as it's already a Buffer
       const query = parseQuery(msg);
       const domain = query.questions[0].name;
+      const queryTypeNum = query.questions[0].type;
+      const queryType = DNS_TYPES[queryTypeNum];
 
-      const records = await DNSRecordModel.find({ subdomain: domain }).exec();
+      const records = await DNSRecordModel.find({
+        subdomain: domain,
+        type: queryType,
+      }).exec();
 
       // Build response directly as Buffer
       const response = buildResponse(query, msg, records);
