@@ -21,9 +21,9 @@ export function buildResponse(
   // Copy ID from query
   response.set(originalMsg.subarray(0, 2), 0);
 
-  // Set flags
-  response[2] = 0x84;
-  response[3] = 0x80;
+  // Set QR and AA bits, clear everything else
+  response[2] = 0x84; // QR=1, AA=1
+  response[3] = 0x00; // All other flags=0
 
   // Copy question count
   response.set(originalMsg.subarray(4, 6), 4);
@@ -123,16 +123,17 @@ function addNSRecordToResponse(
   offset: number,
   record: DNSRecordDoc
 ): number {
+  // Name pointer to question
   response[offset] = 0xc0;
   response[offset + 1] = 0x0c;
   offset += 2;
 
-  // Type NS record
+  // Type NS record (2)
   response[offset] = 0x00;
-  response[offset + 1] = DNS_TYPES_NUMBER["NS"];
+  response[offset + 1] = 0x02;
   offset += 2;
 
-  // Class IN
+  // Class IN (1)
   response[offset] = 0x00;
   response[offset + 1] = 0x01;
   offset += 2;
@@ -145,24 +146,27 @@ function addNSRecordToResponse(
   response[offset + 3] = ttl & 0xff;
   offset += 4;
 
-  // Add nameserver domain name
-  const labels = record.value.split(".");
-  const startOffset = offset + 2;
-  let totalLength = 0;
+  // RDATA length - we'll fill this in later
+  const rdataLengthOffset = offset;
+  offset += 2;
 
+  // Store start of RDATA
+  const rdataStart = offset;
+
+  // Write the nameserver domain name
+  const labels = record.value.split(".");
   for (const label of labels) {
     response[offset++] = label.length;
     for (let i = 0; i < label.length; i++) {
       response[offset++] = label.charCodeAt(i);
     }
-    totalLength += label.length + 1;
   }
   response[offset++] = 0; // null terminator
-  totalLength += 1;
 
-  // Write length
-  response[startOffset - 2] = (totalLength >> 8) & 0xff;
-  response[startOffset - 1] = totalLength & 0xff;
+  // Now write the RDATA length
+  const rdataLength = offset - rdataStart;
+  response[rdataLengthOffset] = (rdataLength >> 8) & 0xff;
+  response[rdataLengthOffset + 1] = rdataLength & 0xff;
 
   return offset;
 }
