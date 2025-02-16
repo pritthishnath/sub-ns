@@ -15,7 +15,13 @@ export function createDNSServer(port: number) {
     try {
       // Use msg directly as it's already a Buffer
       const query = parseQuery(msg);
-      const domain = query.questions[0].name;
+
+      console.log("Query:", {
+        domain: query.questions[0].name,
+        type: DNS_TYPES[query.questions[0].type],
+        flags: query.header.flags.toString(16),
+      });
+      const domain = query.questions[0].name.toLowerCase();
       const queryTypeNum = query.questions[0].type;
       const queryType = DNS_TYPES[queryTypeNum];
 
@@ -23,6 +29,8 @@ export function createDNSServer(port: number) {
         subdomain: domain,
         type: queryType,
       }).exec();
+
+      console.log(`Found ${records.length} records`);
 
       // Build response directly as Buffer
       const response = buildResponse(query, msg, records);

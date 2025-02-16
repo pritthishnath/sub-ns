@@ -22,7 +22,7 @@ export function buildResponse(
   response.set(originalMsg.subarray(0, 2), 0);
 
   // Set flags
-  response[2] = 0x81;
+  response[2] = 0x84;
   response[3] = 0x80;
 
   // Copy question count
