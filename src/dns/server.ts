@@ -35,6 +35,8 @@ export function createDNSServer(port: number) {
       // Build response directly as Buffer
       const response = buildResponse(query, msg, records);
 
+      console.log(`Sending response of length ${response.length}`);
+
       socket.send(response, rinfo.port, rinfo.address, (err) => {
         if (err) console.error("Error sending response:", err);
       });
